@@ -52,10 +52,25 @@ function collectUnverified(listId, emailCol, statusCol) {
   });
 }
 
+// One verification run per list at a time. Between picking the unverified rows and
+// marking them "Pending..." there are several Reoon calls, so two runs started together
+// (double-click, two tabs, admin + owner) would otherwise both send the same rows.
+const busyLists = new Set();
+async function withListLock(listId, fn) {
+  if (busyLists.has(listId)) {
+    return { ok: false, message: 'A verification run is already in progress for this list. Please wait for it to finish.' };
+  }
+  busyLists.add(listId);
+  try { return await fn(); } finally { busyLists.delete(listId); }
+}
+
 // =============================================================================
 //  LEAD LIST CLEAN
 // =============================================================================
-async function cleanLeadList(user, listId) {
+function cleanLeadList(user, listId) {
+  return withListLock(listId, () => runLeadListClean(user, listId));
+}
+async function runLeadListClean(user, listId) {
   const SCRIPT_START = Date.now();
   const { list, emailCol, statusCol, dateCol } = lists.ensureVerificationColumns(listId);
 
@@ -174,7 +189,10 @@ async function aggressivePoll(taskIds, scriptStart) {
 // =============================================================================
 //  VERIFY ACCOUNT EMAILS (admin) - one account, daily + instant credits
 // =============================================================================
-async function verifyWithAccount(user, listId, accountName) {
+function verifyWithAccount(user, listId, accountName) {
+  return withListLock(listId, () => runVerifyWithAccount(user, listId, accountName));
+}
+async function runVerifyWithAccount(user, listId, accountName) {
   const account = reoon.getAccountByName(accountName);
   if (!account) return { ok: false, message: `Error: API account '${accountName}' not found.` };
   if (!account.enabled) return { ok: false, message: `Error: API account '${accountName}' is disabled.` };

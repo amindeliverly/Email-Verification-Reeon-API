@@ -43,24 +43,36 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// ── Simple in-memory login limiter: 10 attempts / 15 min per IP+email ────────
+// ── Simple in-memory login limiter (15 min window) ───────────────────────────
+//  • 10 attempts per IP+email - an attacker elsewhere cannot lock a real user out
+//  • 30 attempts per IP across all emails - stops password spraying
+// req.ip only honours X-Forwarded-For when TRUST_PROXY=1, so it cannot be spoofed.
 const attempts = new Map();
 const WINDOW = 15 * 60 * 1000;
+const LIMIT_PER_ACCOUNT = 10;
+const LIMIT_PER_IP = 30;
 function prune(now) {
   if (attempts.size < 500) return;
   for (const [k, v] of attempts) if (now - v.t > WINDOW) attempts.delete(k);
 }
-function loginAllowed(key) {
-  const now = Date.now();
-  prune(now);
+function record(key, now) {
   const rec = attempts.get(key) || { n: 0, t: now };
   if (now - rec.t > WINDOW) { rec.n = 0; rec.t = now; }
-  if (rec.n >= 10) return false;
-  rec.n++;
   attempts.set(key, rec);
+  return rec;
+}
+function loginKey(ip, email) { return 'acct:' + ip + '|' + email; }
+function loginAllowed(ip, email) {
+  const now = Date.now();
+  prune(now);
+  const acct = record(loginKey(ip, email), now);
+  const byIp = record('ip:' + ip, now);
+  if (acct.n >= LIMIT_PER_ACCOUNT || byIp.n >= LIMIT_PER_IP) return false;
+  acct.n++;
+  byIp.n++;
   return true;
 }
-function loginSucceeded(key) { attempts.delete(key); }
+function loginSucceeded(ip, email) { attempts.delete(loginKey(ip, email)); }
 
 function verifyPassword(user, password) {
   return bcrypt.compareSync(password, user.password_hash);
