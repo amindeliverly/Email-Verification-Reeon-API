@@ -2,12 +2,13 @@
 //  workers.js - background intervals (replaces Apps Script time-based triggers)
 //   • poll pending Reoon tasks every POLL_INTERVAL_SECONDS
 //   • refresh credit balances every 10 minutes
-//   • resume company-cleaning jobs on start
+//   • resume company-cleaning and prioritizer jobs on start
 // =============================================================================
 const config = require('../config');
 const reoon = require('./reoon');
 const leadListCleaner = require('./leadListCleaner');
 const companyCleaner = require('./companyCleaner');
+const dmPrioritizer = require('./dmPrioritizer');
 const { db } = require('../db');
 
 function start() {
@@ -29,9 +30,10 @@ function start() {
   setInterval(() => reoon.refreshCreditBalances().catch((e) => console.log('Credit refresh error: ' + e.message)),
     10 * 60 * 1000).unref();
 
-  // Warm the credit cache shortly after boot, resume unfinished cleaning jobs
+  // Warm the credit cache shortly after boot, resume unfinished cleaning and prioritizer jobs
   setTimeout(() => reoon.refreshCreditBalances().catch(() => {}), 2000).unref();
   companyCleaner.resumeJobs();
+  dmPrioritizer.resumeJobs();
 }
 
 module.exports = { start };

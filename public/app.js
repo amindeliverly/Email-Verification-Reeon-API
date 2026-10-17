@@ -727,7 +727,7 @@
             <td><button class="btn sm" data-key="${a.id}">Change key</button><button class="btn sm" data-rename="${a.id}">Rename</button><button class="btn sm ${a.enabled ? 'ghost' : 'success'}" data-toggle="${a.id}" data-en="${a.enabled ? 1 : 0}">${a.enabled ? 'Disable' : 'Enable'}</button><button class="btn sm danger" data-del="${a.id}">Delete</button></td></tr>`).join('') : '<tr><td colspan="5" class="empty">No accounts yet - add the Reoon accounts here (same names as the sheet tabs).</td></tr>'}
           </tbody></table></div>
           <div class="hint" style="margin-top:8px">Lead List Clean splits emails across all <b>enabled</b> accounts using Daily credits only. Keys are stored locally and never shown in full.</div></div>
-        <div class="card"><h3>OpenAI (CHATGPT_API_KEY) - Company Names Cleaner</h3>
+        <div class="card"><h3>OpenAI (CHATGPT_API_KEY) - Company Names Cleaner + Decision Maker AI Prioritize</h3>
           <form id="oa-form" class="row">
             <div><label class="f">API key ${s.openai.hasKey ? `<span class="badge green">set: ${esc(s.openai.keyMasked)}</span>` : '<span class="badge red">not set</span>'}</label><input type="password" name="apiKey" placeholder="sk-… (blank = keep current)" autocomplete="new-password"></div>
             <div style="max-width:220px"><label class="f">Model</label><input type="text" name="model" value="${esc(s.openai.model)}"></div>
@@ -890,6 +890,7 @@
         <li><span class="highlight">Verification Priority:</span> if a status column exists, deliverable emails (Safe → Role Account → Catch All) are prioritized automatically.</li>
         <li><span class="highlight">Title Keyword Fallback:</span> if the keywords box is empty, 29 pre-defined default titles (CEO, VP, Director, Owner, Founder, etc.) are used. Custom keywords replace defaults entirely.</li>
         <li>Supports filtering by Industry, Country, Seniority and Department. The matching count updates live.</li>
+        <li><span class="highlight">🤖 AI Prioritize (optional):</span> ChatGPT scores every matched title 1-100 for decision-making authority, so each company keeps its most senior people (CEO / Owner first) instead of the first rows found. Verification status still wins first. Adds an <span class="highlight">"AI Priority Score"</span> column; scores are cached so re-runs are fast. Uses the same OpenAI key as Company Name Cleaner.</li>
         <li>Outputs to a new sheet <span class="highlight">"Cleaned - [Sheet Name]"</span>, keeping original data untouched.</li></ul></div>
       <div class="card"><h3>Company Names Cleaner (GPT-Powered)</h3>
         <ul><li>Uses the OpenAI API to remove locations, legal suffixes (LLC, Inc, GmbH), URLs and generic business terms.</li>

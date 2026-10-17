@@ -132,6 +132,14 @@ CREATE TABLE IF NOT EXISTS clean_jobs (
   created_at         TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at         TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Decision Maker AI Prioritizer: GPT decision-making score per job title (lowercased), reused across runs
+CREATE TABLE IF NOT EXISTS dm_title_scores (
+  title      TEXT PRIMARY KEY,
+  score      INTEGER NOT NULL,
+  model      TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `);
 
 // ── Migrations for databases created by earlier versions ──

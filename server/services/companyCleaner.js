@@ -7,8 +7,8 @@
 //  getProgress    → "Check Cleaning Progress"
 //  reset          → "Reset Cleaning Progress"
 // =============================================================================
-const config = require('../config');
-const { db, getSetting } = require('../db');
+const { db } = require('../db');
+const openai = require('./openai');
 const lists = require('./lists');
 const activity = require('./activityLog');
 
@@ -45,26 +45,8 @@ ${promptLines.join('\n')}
 `;
 }
 
-async function callChatGptBatch(prompt, apiKey, model) {
-  const res = await fetch(`${config.openai.apiBase}/chat/completions`, {
-    method: 'POST',
-    signal: AbortSignal.timeout(120000),
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: model || 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are an assistant that strictly cleans company names as per instructions.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.2
-    })
-  });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const msg = (json.error && json.error.message) || `HTTP ${res.status}`;
-    throw new Error('GPT API Error: ' + msg);
-  }
-  return (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content || '').trim();
+function callChatGptBatch(prompt, apiKey, model) {
+  return openai.chat('You are an assistant that strictly cleans company names as per instructions.', prompt, apiKey, model);
 }
 
 // ── Job helpers ──────────────────────────────────────────────────────────────
@@ -138,10 +120,9 @@ async function runJob(jobId) {
   if (running.has(jobId)) return;
   running.add(jobId);
   try {
-    const apiKey = getSetting('openai_api_key', '') || config.openai.defaultKey;
-    const model = getSetting('openai_model', '') || config.openai.defaultModel;
+    const { apiKey, model } = openai.getCredentials();
     if (!apiKey) {
-      updateJob(jobId, { status: 'error', error: 'API key not found. Please set CHATGPT_API_KEY in Admin → API Keys & Settings.' });
+      updateJob(jobId, { status: 'error', error: openai.NO_KEY_MESSAGE });
       finishActivity(jobId, 'error');
       return;
     }

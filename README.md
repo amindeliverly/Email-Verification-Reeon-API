@@ -8,7 +8,7 @@ Google Sheets automation, without Google Sheets:
 | ⚡ Bulk Lead List Clean (7 accounts, daily credits only) | `🚀 Lead List Clean` | List page → **Lead List Clean** |
 | ✉️ Verify Account Emails (per account, admin only) | `✉️ Verify Account Emails` | List page → **Verify with this account** (admins only) |
 | 🔄 Check Pending Results / 🗑️ Clear Pending Tasks | same | Overview / List page |
-| 🧹 Clean Decision Makers (keywords, seniority, industry, departments, country) | `🧹 Clean Decision Makers` | **Clean Decision Makers** page |
+| 🧹 Clean Decision Makers (keywords, seniority, industry, departments, country, optional 🤖 AI Prioritize via the same OpenAI key) | `🧹 Clean Decision Makers` | **Clean Decision Makers** page |
 | 🤖 Company Names Cleaner (OpenAI GPT, batches of 100) | `🔄 Start Cleaning Company Names` | **Company Name Cleaner** page |
 | 📊 info tab (activity log / misuse monitoring) | `info` sheet | **Activity Log** page |
 | 🔃 Refresh & Show All Credits | same | **Credits** page + header pill |
@@ -20,8 +20,8 @@ order, labels, alerts and dialogs), then the read-only `info` activity log and t
 Every menu action lives in exactly one place and runs on the **selected sheet** (the one open on
 screen), like `SpreadsheetApp.getActiveSheet()`. Only one action can run at a time, so the same
 job cannot be started twice by accident. The original `decision_maker.html` and
-`GuidelineDialog.html` dialogs are reused **unchanged** (served from `public/dialogs/` with a tiny
-`google.script.run` shim).
+`GuidelineDialog.html` dialogs are reused (served from `public/dialogs/` with a tiny
+`google.script.run` shim); the only addition is the **🤖 AI Prioritize** checkbox in `decision_maker.html`.
 
 > The original Google Apps Script code is kept **unchanged** in `google-apps-script/`
 > (that folder is in `.gitignore`, so it is never committed).
@@ -120,7 +120,7 @@ server/
 public/
   index.html, app.js, styles.css   sidebar UI with the Email Verifier menu + sheet grid
   gas-shim.js                      google.script.run / google.script.host shim for the dialogs
-  dialogs/                         verbatim copies of decision_maker.html + GuidelineDialog.html
+  dialogs/                         copies of decision_maker.html (+ AI Prioritize option) + GuidelineDialog.html
 google-apps-script/        original Sheets code - untouched, git-ignored
 data/                      SQLite database (created on first run, git-ignored)
 ```

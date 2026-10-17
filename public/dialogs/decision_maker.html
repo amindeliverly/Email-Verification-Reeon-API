@@ -93,6 +93,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;fo
 .pc-row input[type=number]{width:72px;background:#0f1117;border:1px solid #252f44;border-radius:7px;padding:6px 10px;color:#e2e8f0;font-size:14px;font-weight:700;text-align:center;outline:none;}
 .pc-row input[type=number]:focus{border-color:#6366f1;}
 .pc-row .hint{font-size:11px;color:#475569;}
+.ai-row{display:flex;align-items:flex-start;gap:8px;margin-top:10px;cursor:pointer;}
+.ai-row input{margin-top:2px;accent-color:#6366f1;cursor:pointer;}
+.ai-row .ai-lbl{font-size:12px;color:#94a3b8;}
+.ai-row .ai-lbl b{color:#c7d2fe;}
 
 /* ── Active tags bar ── */
 #tagsBar{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;background:#0d1018;border-bottom:1px solid #252f44;min-height:38px;align-items:center;}
@@ -238,6 +242,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;fo
       <input type="number" id="perCompany" value="1" min="1" max="999">
       <span class="hint">decision makers will be kept</span>
     </div>
+    <label class="ai-row">
+      <input type="checkbox" id="aiPrioritize">
+      <span class="ai-lbl"><b>🤖 AI Prioritize (ChatGPT)</b> - rank each company's people by decision-making authority (CEO / Owner first) and add an "AI Priority Score" column. Uses the same CHATGPT_API_KEY as Company Name Cleaner.</span>
+    </label>
   </div>
 </div>
 
@@ -789,7 +797,8 @@ function applyFilters() {
     industry    : Array.from(selected.industry),
     departments : Array.from(selected.departments),
     country     : Array.from(selected.country),
-    perCompany  : parseInt(document.getElementById('perCompany').value) || 1
+    perCompany  : parseInt(document.getElementById('perCompany').value) || 1,
+    aiPrioritize: document.getElementById('aiPrioritize').checked
   };
 
   if (typeof google !== 'undefined') {
@@ -806,6 +815,7 @@ function applyFilters() {
                    + 'Departments  : ' + filters.departments.length + ' item(s)\n'
                    + 'Countries    : ' + filters.country.length + ' item(s)\n'
                    + 'Per Company  : ' + filters.perCompany + ' lead(s)\n'
+                   + 'AI Prioritize: ' + (filters.aiPrioritize ? 'On (ChatGPT)' : 'Off') + '\n'
                    + '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'
                    + 'A new Cleaned Sheet will be created. Proceed?';
                    

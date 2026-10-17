@@ -1,4 +1,4 @@
-// Decision Maker filter + Company Name Cleaner + Activity log
+// Decision Maker filter + Company Name Cleaner + Sheet Cleaner + DM Prioritizer + Activity log
 const express = require('express');
 const auth = require('../auth');
 const lists = require('../services/lists');
@@ -6,6 +6,7 @@ const decisionMaker = require('../services/decisionMaker');
 const companyCleaner = require('../services/companyCleaner');
 const activity = require('../services/activityLog');
 const sheetCleaner = require('../services/sheetCleaner');
+const dmPrioritizer = require('../services/dmPrioritizer');
 
 const router = express.Router();
 router.use(auth.requireAuth);
@@ -22,9 +23,9 @@ router.post('/decision-makers/count', (req, res) => {
   try { res.json({ count: decisionMaker.countLeads(list.id, req.body.filters) }); }
   catch (e) { res.status(400).json({ error: e.message }); }
 });
-router.post('/decision-makers/run', (req, res) => {
+router.post('/decision-makers/run', async (req, res) => {
   const list = ownedList(req, res); if (!list) return;
-  try { res.json(decisionMaker.runFilter(req.user, list.id, req.body.filters)); }
+  try { res.json(await decisionMaker.runFilter(req.user, list.id, req.body.filters)); }
   catch (e) { res.status(400).json({ error: e.message }); }
 });
 
@@ -51,6 +52,24 @@ router.post('/sheet-cleaner/run', (req, res) => {
   const list = ownedList(req, res); if (!list) return;
   try { res.json(sheetCleaner.run(req.user, list.id, req.body)); }
   catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+// ── DM Prioritizer (A-J) ──
+router.post('/prioritizer/preview', (req, res) => {
+  const list = ownedList(req, res); if (!list) return;
+  try { res.json(dmPrioritizer.preview(list.id)); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+router.post('/prioritizer/start', async (req, res) => {
+  const list = ownedList(req, res); if (!list) return;
+  try { res.json(dmPrioritizer.startJob(req.user, list.id, !!req.body.overwrite)); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+router.get('/prioritizer/progress', (req, res) => {
+  res.json(dmPrioritizer.getProgress(req.user));
+});
+router.post('/prioritizer/reset', (req, res) => {
+  res.json(dmPrioritizer.reset(req.user));
 });
 
 // ── Activity log ("info" tab) - admin sees everyone, users see their own ──

@@ -24,7 +24,8 @@ body{background:#fff!important;color:#111827!important;}
 .cb,.dp-cb{border-color:#9ca3af!important;}
 .opt.on .cb,.dp.all-sel .dp-cb{background:#4f46e5!important;border-color:#4f46e5!important;}
 .dp.has-sel .dp-cb{border-color:#4f46e5!important;}
-.opt-lbl,.dp-name,.pc-row label{color:#374151!important;}
+.opt-lbl,.dp-name,.pc-row label,.ai-row .ai-lbl{color:#374151!important;}
+.ai-row .ai-lbl b{color:#3730a3!important;}
 .opt.on .opt-lbl,.dp.has-sel .dp-name{color:#111827!important;}
 .no-res,.empty-hint,#topCount .tc-num.loading{color:#9ca3af!important;}
 .dp-cnt{background:#e0e7ff!important;color:#4f46e5!important;}

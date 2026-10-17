@@ -17,18 +17,18 @@ const FUNCTIONS = {
     return decisionMaker.countLeads(list.id, args[0] || {});
   },
   // runDecisionMakerFilter(filters) → summary string (shown by the dialog via alert)
-  runDecisionMakerFilter(req, list, args) {
-    return decisionMaker.runFilter(req.user, list.id, args[0] || {}).message;
+  async runDecisionMakerFilter(req, list, args) {
+    return (await decisionMaker.runFilter(req.user, list.id, args[0] || {})).message;
   }
 };
 
-router.post('/api/gas/:fn', auth.requireAuth, express.json(), (req, res) => {
+router.post('/api/gas/:fn', auth.requireAuth, express.json(), async (req, res) => {
   const fn = FUNCTIONS[req.params.fn];
   if (!fn) return res.status(404).json({ error: 'Unknown server function: ' + req.params.fn });
   const list = lists.getList(Number(req.body.listId));
   if (!lists.canAccess(req.user, list)) return res.status(400).json({ error: 'No active sheet selected. Open a lead list tab first.' });
   try {
-    res.json({ result: fn(req, list, Array.isArray(req.body.args) ? req.body.args : []) });
+    res.json({ result: await fn(req, list, Array.isArray(req.body.args) ? req.body.args : []) });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
