@@ -9,14 +9,14 @@ router.post('/login', (req, res) => {
   const password = String(req.body.password || '');
   if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
 
-  const key = email; // per account, so a spoofed X-Forwarded-For cannot reset the counter
-  if (!auth.loginAllowed(key)) return res.status(429).json({ error: 'Too many login attempts. Try again in 15 minutes.' });
+  const ip = req.ip || 'unknown';
+  if (!auth.loginAllowed(ip, email)) return res.status(429).json({ error: 'Too many login attempts. Try again in 15 minutes.' });
 
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
   if (!user || !auth.verifyPassword(user, password)) return res.status(401).json({ error: 'Invalid email or password.' });
   if (!user.active) return res.status(403).json({ error: 'This account is deactivated. Contact your admin.' });
 
-  auth.loginSucceeded(key);
+  auth.loginSucceeded(ip, email);
   auth.startSession(req, user);
   db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
   res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role } });
